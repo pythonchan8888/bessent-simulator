@@ -547,10 +547,14 @@
       .horizon-wrap { width: 100%; justify-content: space-between; }
       .horizon-pills { flex: 1; justify-content: flex-end; }
       .horizon-btn { flex: 1; text-align: center; padding: 5px 8px; font-size: 0.68rem; }
-      .metrics { grid-template-columns: 1fr; gap: 10px; }
-      .metric-value { font-size: 1.2rem; }
-      .metric { padding: 16px 12px; }
-      .metric-label { font-size: 0.6rem; }
+      .metrics { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .metric-value { font-size: 0.95rem; }
+      .metric { padding: 14px 6px; }
+      .metric-label { font-size: 0.52rem; letter-spacing: 0.08em; margin-bottom: 6px; }
+      .metric-delta { font-size: 0.62rem; }
+      .metric-flow { font-size: 0.58rem; }
+      /* Full-bleed Sankey — edge to edge on mobile */
+      .chart-wrap { margin-left: -14px; margin-right: -14px; }
       .slider-meta { width: 145px; }
       .slider-label { font-size: 0.78rem; }
       .slider-subtext { font-size: 0.64rem; }
@@ -567,6 +571,12 @@
 
     @media (max-width: 420px) {
       .slider-meta { width: 120px; }
+      .metric-value { font-size: 0.82rem; }
+      .metric { padding: 12px 3px; }
+      .metric-label { font-size: 0.46rem; letter-spacing: 0.06em; }
+      .metric-delta { font-size: 0.58rem; }
+      .metric-flow { font-size: 0.54rem; }
+      .metrics { gap: 6px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
