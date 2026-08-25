@@ -559,8 +559,6 @@
       .metric-label { font-size: 0.52rem; letter-spacing: 0.08em; margin-bottom: 6px; }
       .metric-delta { font-size: 0.62rem; }
       .metric-flow { font-size: 0.58rem; }
-      /* Full-bleed Sankey — edge to edge on mobile */
-      .chart-wrap { margin-left: -14px; margin-right: -14px; width: calc(100% + 28px); }
       .slider-meta { width: 145px; }
       .slider-label { font-size: 0.78rem; }
       .slider-subtext { font-size: 0.64rem; }
@@ -583,7 +581,6 @@
       .metric-delta { font-size: 0.58rem; }
       .metric-flow { font-size: 0.54rem; }
       .metrics { gap: 6px; }
-      .chart-wrap { margin-left: -12px; margin-right: -12px; width: calc(100% + 24px); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -963,9 +960,9 @@ function sankey() {
 
   // ── LAYOUT ──
   const lX = mob ? 4 : 12;
-  const lW = mob ? 42 : 72;
-  const rW = mob ? 28 : 40;
-  const rX = mob ? W * 0.48 : W * 0.75;
+  const lW = mob ? 44 : 72;
+  const rW = mob ? 18 : 32;
+  const rX = mob ? Math.max(lX + lW + 70, W - 92) : Math.round(W * 0.76);
   const rGap = mob ? 10 : 16;
 
   // Scale drawing height proportionally to Fed Assets
@@ -1045,15 +1042,15 @@ function sankey() {
   ctx.shadowColor = 'transparent';
 
   // Fed Assets label — centered in block
-  ctx.fillStyle = 'rgba(255,255,255,0.78)';
-  ctx.font = `500 ${mob ? 9 : 11}px "Inter",sans-serif`;
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.font = `500 ${mob ? 8.5 : 11}px "Inter",sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const lCX = lX + lW / 2;
   const lCY = drawY + drawH / 2;
-  ctx.fillText('Fed Assets', lCX, lCY - 9);
-  ctx.font = `600 ${mob ? 10 : 13}px "Inter",sans-serif`;
-  ctx.fillText(`(${fB(d.adjA)})`, lCX, lCY + 9);
+  ctx.fillText('Fed Assets', lCX, lCY - (mob ? 7 : 9));
+  ctx.font = `700 ${mob ? 9.5 : 13}px "Inter",sans-serif`;
+  ctx.fillText(`(${fB(d.adjA)})`, lCX, lCY + (mob ? 7 : 9));
 
   // ── 3. RIGHT BLOCKS ──
   active.forEach(s => {
@@ -1070,12 +1067,36 @@ function sankey() {
       ? '$' + (s.v / 1000).toFixed(s.v >= 10000 ? 1 : 2) + 'T'
       : '$' + Math.round(s.v) + 'B';
 
-    // Always label to the RIGHT of block
-    ctx.font = `600 ${mob ? 9 : 11}px "Inter",sans-serif`;
-    ctx.fillStyle = s.c;
+    const labelX = rX + rW + (mob ? 6 : 9);
+    const midY = s.rY + s.rH / 2;
+
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${s.l}  ${vStr}`, rX + rW + (mob ? 6 : 10), s.rY + s.rH / 2);
+
+    if (mob) {
+      // 2 rows on mobile with vibrant category color
+      ctx.font = `600 8.5px "Inter",sans-serif`;
+      ctx.fillStyle = s.c;
+      ctx.fillText(s.l, labelX, midY - 5.5);
+
+      ctx.font = `700 9.5px "JetBrains Mono",monospace`;
+      ctx.fillStyle = s.c;
+      ctx.fillText(vStr, labelX, midY + 5.5);
+    } else {
+      if (s.rH >= 26) {
+        ctx.font = `600 10.5px "Inter",sans-serif`;
+        ctx.fillStyle = s.c;
+        ctx.fillText(s.l, labelX, midY - 6.5);
+
+        ctx.font = `700 12px "JetBrains Mono",monospace`;
+        ctx.fillStyle = s.c;
+        ctx.fillText(vStr, labelX, midY + 6.5);
+      } else {
+        ctx.font = `600 11px "Inter",sans-serif`;
+        ctx.fillStyle = s.c;
+        ctx.fillText(`${s.l}  ${vStr}`, labelX, midY);
+      }
+    }
   });
 
   // ── 4. Split ticks on left block ──
