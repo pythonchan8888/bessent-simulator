@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bessent Simulator — Brand Identity System & Logo Specs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a12;
+      --surface: #111119;
+      --surface-2: #161622;
+      --border: #1c1c2e;
+      --border-subtle: rgba(255,255,255,0.06);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --amber: #f59e0b;
+      --amber-light: #fbbf24;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --sans: 'Inter', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 40px 24px 80px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    header {
+      margin-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--amber);
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    p.sub {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .section {
+      margin-bottom: 56px;
+    }
+
+    .sec-title {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sec-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Grid cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .card.light {
+      background: #ffffff;
+      border-color: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .card-tag {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .card.light .card-tag {
+      color: #64748b;
+    }
+
+    .logo-view {
+      padding: 32px 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Lockup container */
+    .lockup-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 36px 20px;
+    }
+
+    /* Favicon test tab bar */
+    .tab-bar-mock {
+      width: 100%;
+      background: #06060a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .tab-bar-top {
+      background: #111119;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .browser-dots {
+      display: flex;
+      gap: 6px;
+      margin-right: 12px;
+    }
+
+    .b-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .b-red { background: #ef4444; }
+    .b-yellow { background: #f59e0b; }
+    .b-green { background: #10b981; }
+
+    .tab-active {
+      background: #0a0a12;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-family: var(--sans);
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .tab-content-area {
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .fav-test-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .fav-test-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-dim);
+    }
+
+    .fav-box {
+      background: #161622;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Specs table */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .spec-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .spec-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .spec-val {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      font-family: var(--mono);
+    }
+
+    .spec-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* App Header Simulation */
+    .app-header-sim {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .sim-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .sim-presets {
+      display: flex;
+      gap: 8px;
+    }
+
+    .sim-pbtn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--sans);
+    }
+
+    .sim-pbtn.active {
+      border-color: rgba(6, 182, 212, 0.5);
+      color: var(--text);
+      background: rgba(6, 182, 212, 0.08);
+    }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-4, .specs-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="badge">Brand Identity & Geometry Spec</div>
+    <h1>Bessent Simulator Logo System</h1>
+    <p class="sub">Institutional macro liquidity transmission mark — geometric precision, balance sheet flow, terminal aesthetic.</p>
+  </header>
+
+  <!-- ── 1. PRIMARY LOGO MARK ── -->
+  <div class="section">
+    <div class="sec-title">1. Primary Logo Mark (Macro Transmission Delta)</div>
+    <div class="grid-2">
+      <!-- Dark Theme -->
+      <div class="card">
+        <span class="card-tag">Dark Surface (#0a0a12)</span>
+        <div class="logo-view">
+          <img src="logo-mark-sovereign.svg" width="160" height="160" alt="Primary Mark Dark" />
+        </div>
+      </div>
+      <!-- Light Theme -->
+      <div class="card light">
+        <span class="card-tag">Institutional Paper (#ffffff)</span>
+        <div class="logo-view">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="160" height="160" fill="none">
+            <defs>
+              <linearGradient id="l-amber-top" x1="20" y1="24" x2="110" y2="64" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#d97706"/>
+                <stop offset="60%" stop-color="#f59e0b"/>
+                <stop offset="100%" stop-color="#b45309"/>
+              </linearGradient>
+              <linearGradient id="l-pillar" x1="18" y1="22" x2="34" y2="106" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#1e3a8a"/>
+              </linearGradient>
+              <linearGradient id="l-core" x1="38" y1="64" x2="98" y2="64" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#0284c7"/>
+              </linearGradient>
+            </defs>
+            <rect x="18" y="24" width="12" height="80" rx="3" fill="url(#l-pillar)"/>
+            <path d="M36 30 C 58 30, 80 42, 108 61 C 111 62.8, 111 65.2, 108 67 C 80 86, 58 98, 36 98 L 36 82 C 54 82, 70 72, 92 64 C 70 56, 54 46, 36 46 Z" fill="url(#l-amber-top)"/>
+            <path d="M36 54 C 50 54, 64 59, 78 64 C 64 69, 50 74, 36 74 Z" fill="url(#l-core)"/>
+            <circle cx="108" cy="64" r="3.5" fill="#d97706"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. HORIZONTAL LOCKUP ── -->
+  <div class="section">
+    <div class="sec-title">2. Horizontal Lockup (Mark + Wordmark)</div>
+    <div class="card" style="margin-bottom: 16px;">
+      <span class="card-tag">Dark Background Lockup</span>
+      <div class="lockup-container">
+        <img src="logo-lockup-dark.svg" style="max-width: 100%; height: auto;" alt="Dark Lockup" />
+      </div>
+    </div>
+    <div class="card light">
+      <span class="card-tag">Light Background Lockup</span>
+      <div class="lockup-container">
+        <img src="logo-lockup-light.svg" style="max-width: 100%; height: auto;" alt="Light Lockup" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. EXPLORATORY CONCEPTS ── -->
+  <div class="section">
+    <div class="sec-title">3. Design Variations & Concepts</div>
+    <div class="grid-4">
+      <div class="card">
+        <span class="card-tag">Concept A: Sovereign Delta</span>
+        <div class="logo-view">
+          <img src="logo-mark-sovereign.svg" width="80" height="80" alt="Concept A" />
+        </div>
+        <p style="font-size:0.7rem; color:var(--text-dim); text-align:center; margin-top:8px;">Dual laminar stream + precision vertex node</p>
+      </div>
+
+      <div class="card">
+        <span class="card-tag">Concept B: Valve Chevron</span>
+        <div class="logo-view">
+          <img src="logo-mark-valve.svg" width="80" height="80" alt="Concept B" />
+        </div>
+        <p style="font-size:0.7rem; color:var(--text-dim); text-align:center; margin-top:8px;">3-Tier TGA/RRP/Reserves discharge vector</p>
+      </div>
+
+      <div class="card">
+        <span class="card-tag">Concept C: Monogram B</span>
+        <div class="logo-view">
+          <img src="logo-mark-monogram.svg" width="80" height="80" alt="Concept C" />
+        </div>
+        <p style="font-size:0.7rem; color:var(--text-dim); text-align:center; margin-top:8px;">Geometric balance sheet B loop</p>
+      </div>
+
+      <div class="card">
+        <span class="card-tag">Concept D: Primary Mark</span>
+        <div class="logo-view">
+          <img src="logo-mark.svg" width="80" height="80" alt="Concept D" />
+        </div>
+        <p style="font-size:0.7rem; color:var(--text-dim); text-align:center; margin-top:8px;">Laminar aperture with ambient glow</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. FAVICON MATRIX & SCALING TEST ── -->
+  <div class="section">
+    <div class="sec-title">4. Favicon & Multi-Scale Legibility</div>
+    <div class="tab-bar-mock">
+      <div class="tab-bar-top">
+        <div class="browser-dots">
+          <div class="b-dot b-red"></div>
+          <div class="b-dot b-yellow"></div>
+          <div class="b-dot b-green"></div>
+        </div>
+        <div class="tab-active">
+          <img src="favicon.svg" width="16" height="16" alt="16px" />
+          <span>Bessent Simulator — TGA Bazooka & Net Liquidity</span>
+        </div>
+      </div>
+      <div class="tab-content-area">
+        <div class="fav-test-item">
+          <div class="fav-box" style="width: 32px; height: 32px;">
+            <img src="favicon.svg" width="16" height="16" alt="16" />
+          </div>
+          <span class="fav-test-label">16×16 px</span>
+        </div>
+
+        <div class="fav-test-item">
+          <div class="fav-box" style="width: 48px; height: 48px;">
+            <img src="favicon.svg" width="24" height="24" alt="24" />
+          </div>
+          <span class="fav-test-label">24×24 px</span>
+        </div>
+
+        <div class="fav-test-item">
+          <div class="fav-box" style="width: 60px; height: 60px;">
+            <img src="favicon.svg" width="32" height="32" alt="32" />
+          </div>
+          <span class="fav-test-label">32×32 px</span>
+        </div>
+
+        <div class="fav-test-item">
+          <div class="fav-box" style="width: 80px; height: 80px;">
+            <img src="favicon.svg" width="48" height="48" alt="48" />
+          </div>
+          <span class="fav-test-label">48×48 px</span>
+        </div>
+
+        <div class="fav-test-item">
+          <div class="fav-box" style="width: 100px; height: 100px; background:#0a0a12; border-radius:20px;">
+            <img src="favicon.svg" width="64" height="64" alt="64" />
+          </div>
+          <span class="fav-test-label">iOS Touch (180px)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 5. LIVE APP HEADER INTEGRATION PREVIEW ── -->
+  <div class="section">
+    <div class="sec-title">5. In-App Header Integration Preview</div>
+    <div class="app-header-sim">
+      <div class="sim-left">
+        <img src="favicon.svg" width="34" height="34" alt="Header Icon" />
+        <div>
+          <div style="display:flex; align-items:baseline; gap:8px;">
+            <span style="font-size:1.45rem; font-weight:700; letter-spacing:-0.025em; color:#f8fafc;">Bessent</span>
+            <span style="font-family:var(--mono); font-size:1.05rem; font-weight:600; color:var(--amber); letter-spacing:0.08em;">SIMULATOR</span>
+          </div>
+          <div style="font-family:var(--mono); font-size:0.68rem; color:var(--text-dim); opacity:0.6;">by @gyukatsu_maxi • Macro Liquidity Engine</div>
+        </div>
+      </div>
+      <div class="sim-presets">
+        <button class="sim-pbtn">Baseline</button>
+        <button class="sim-pbtn active">Base Case</button>
+        <button class="sim-pbtn">Max Liquidity</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 6. GEOMETRIC SPECIFICATIONS ── -->
+  <div class="section">
+    <div class="sec-title">6. Design Tokens & Visual Metaphor</div>
+    <div class="specs-grid">
+      <div class="spec-box">
+        <div class="spec-label">Balance Sheet Anchor</div>
+        <div class="spec-val" style="color: #38bdf8;">#38bdf8 → #2563eb</div>
+        <div class="spec-desc">Represents the foundational Federal Reserve asset base ($6.75T) anchoring total liquidity.</div>
+      </div>
+
+      <div class="spec-box">
+        <div class="spec-label">Liquidity Stream (Amber)</div>
+        <div class="spec-val" style="color: #f59e0b;">#f59e0b → #fbbf24</div>
+        <div class="spec-desc">The primary transmission channel: TGA cash discharge into high-powered bank reserves.</div>
+      </div>
+
+      <div class="spec-box">
+        <div class="spec-label">Core Vector (Emerald/Pulse)</div>
+        <div class="spec-val" style="color: #10b981;">#10b981 → #ffffff</div>
+        <div class="spec-desc">Forward-leaning delta node representing market rate transmission and yield compression.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

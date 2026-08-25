@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" fill="none">
+  <defs>
+    <linearGradient id="b-amber-main" x1="20" y1="20" x2="108" y2="108" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="b-blue-pillar" x1="20" y1="24" x2="40" y2="104" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="b-inner-glow" x1="38" y1="36" x2="96" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.2"/>
+    </linearGradient>
+    <filter id="b-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Left Balance Sheet Pillar -->
+  <rect x="22" y="24" width="14" height="80" rx="4" fill="url(#b-blue-pillar)"/>
+
+  <!-- Top Liquidity Loop (Upper Balance Sheet lobe) -->
+  <path d="M36 26 H 72 C 88 26, 100 36, 100 50 C 100 62, 89 69, 75 70 C 89 71, 102 78, 102 92 C 102 106, 88 102, 72 102 H 36" 
+        stroke="url(#b-amber-main)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Inner Flow Acceleration Ribbons -->
+  <path d="M42 42 H 68 C 76 42, 82 46, 82 52 C 82 58, 76 62, 68 62 H 42" 
+        stroke="url(#b-inner-glow)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M42 76 H 70 C 78 76, 84 80, 84 86 C 84 92, 78 96, 70 96 H 42" 
+        stroke="url(#b-inner-glow)" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Precision Aperture Node -->
+  <circle cx="75" cy="70" r="3.5" fill="#38bdf8"/>
+</svg>

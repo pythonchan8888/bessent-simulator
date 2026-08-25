@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 80" width="420" height="80" fill="none">
+  <defs>
+    <!-- Mark Gradients for Light Themes -->
+    <linearGradient id="hl-light-amber" x1="16" y1="16" x2="68" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="60%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="hl-light-pillar" x1="12" y1="16" x2="22" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#1e3a8a"/>
+    </linearGradient>
+    <linearGradient id="hl-light-core" x1="24" y1="40" x2="52" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ── 1. LOGO MARK (Left) ── -->
+  <g transform="translate(8, 8) scale(0.75)">
+    <!-- Balance Sheet Anchor -->
+    <rect x="14" y="16" width="10" height="56" rx="2.5" fill="url(#hl-light-pillar)"/>
+
+    <!-- Converging Liquidity Flow Stream -->
+    <path d="M28 20 C 44 20, 58 29, 74 41 C 76 42.5, 76 44.5, 74 46 C 58 58, 44 67, 28 67 L 28 56 C 40 56, 51 49, 64 43.5 C 51 38, 40 31, 28 31 Z" 
+          fill="url(#hl-light-amber)"/>
+
+    <!-- Accelerated Core Stream -->
+    <path d="M28 36.5 C 38 36.5, 48 40, 56 43.5 C 48 47, 38 50.5, 28 50.5 Z" 
+          fill="url(#hl-light-core)"/>
+
+    <!-- Velocity Vertex -->
+    <circle cx="74" cy="43.5" r="2.8" fill="#d97706"/>
+  </g>
+
+  <!-- Vertical Divider -->
+  <line x1="84" y1="20" x2="84" y2="60" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ── 2. WORDMARK (Right) ── -->
+  <!-- "BESSENT" Sharp Geometric Sans -->
+  <text x="100" y="42" fill="#0f172a" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="24" font-weight="700" letter-spacing="-0.02em">BESSENT</text>
+
+  <!-- "SIMULATOR" Technical Mono -->
+  <text x="218" y="42" fill="#d97706" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="16" font-weight="600" letter-spacing="0.16em">SIMULATOR</text>
+
+  <!-- Subtitle Tagline -->
+  <text x="100" y="58" fill="#64748b" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="8.5" font-weight="500" letter-spacing="0.14em">MACRO LIQUIDITY ENGINE</text>
+  <circle cx="248" cy="55.5" r="1.5" fill="#059669"/>
+  <text x="254" y="58" fill="#059669" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="8.5" font-weight="500" letter-spacing="0.12em">LIVE MODEL</text>
+</svg>
