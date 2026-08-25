@@ -145,13 +145,20 @@
       letter-spacing: -0.025em;
     }
 
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
     .presets { display: flex; gap: 8px; }
 
     .preset-btn {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text-muted);
-      padding: 6px 18px;
+      padding: 6px 16px;
       border-radius: 6px;
       font-size: 0.8rem;
       font-weight: 500;
@@ -171,6 +178,46 @@
       color: var(--text);
     }
 
+    /* ---- Horizon Controls ---- */
+    .horizon-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .horizon-label {
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .horizon-pills { display: flex; gap: 4px; }
+
+    .horizon-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-family: var(--mono);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .horizon-btn:hover {
+      border-color: var(--text-dim);
+      color: var(--text);
+    }
+
+    .horizon-btn.active {
+      background: rgba(6, 182, 212, 0.1);
+      border-color: rgba(6, 182, 212, 0.4);
+      color: var(--cyan);
+    }
+
     /* ---- Sankey ---- */
     .chart-wrap { margin-bottom: 0; }
     .chart-wrap canvas { width: 100%; display: block; }
@@ -185,7 +232,7 @@
 
     .metric {
       flex: 1;
-      padding: 22px 16px;
+      padding: 20px 16px;
       text-align: center;
     }
 
@@ -217,6 +264,14 @@
       font-family: var(--mono);
     }
 
+    .metric-flow {
+      font-size: 0.68rem;
+      font-family: var(--mono);
+      color: var(--cyan);
+      margin-top: 4px;
+      opacity: 0.9;
+    }
+
     .pos { color: var(--emerald); }
     .neg { color: var(--rose); }
     .dim { color: var(--text-dim); }
@@ -228,17 +283,31 @@
       display: flex;
       align-items: center;
       gap: 20px;
-      padding: 18px 0;
+      padding: 16px 0;
       border-bottom: 1px solid var(--border);
     }
 
-    .slider-label {
-      width: 175px;
+    .slider-meta {
+      width: 225px;
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .slider-label {
       font-size: 0.85rem;
       font-weight: 500;
       color: var(--text-muted);
       transition: color 0.15s ease;
+    }
+
+    .slider-subtext {
+      font-size: 0.68rem;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      opacity: 0.8;
+      letter-spacing: 0.01em;
     }
 
     .slider-row input[type="range"] {
@@ -289,12 +358,92 @@
       transition: color 0.15s ease, border-color 0.15s ease;
     }
 
+    /* ---- Methodology Collapsible ---- */
+    .methodology-card {
+      margin-top: 24px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .methodology-card:hover {
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .methodology-summary {
+      padding: 12px 16px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      font-family: var(--mono);
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+
+    .methodology-summary::-webkit-details-marker { display: none; }
+
+    .methodology-summary .chevron {
+      transition: transform 0.2s ease;
+      opacity: 0.6;
+    }
+
+    .methodology-card[open] .methodology-summary .chevron {
+      transform: rotate(180deg);
+    }
+
+    .methodology-content {
+      padding: 0 16px 16px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .method-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .method-item {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .method-title {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      font-family: var(--mono);
+    }
+
+    .method-item code {
+      display: block;
+      background: #09090f;
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--cyan);
+      margin: 6px 0;
+      word-break: break-word;
+    }
+
     /* ---- Footer ---- */
     footer {
       text-align: center;
       font-size: 0.68rem;
       color: var(--text-dim);
-      padding-top: 12px;
+      padding-top: 16px;
       font-family: var(--mono);
       letter-spacing: 0.03em;
       opacity: 0.7;
@@ -314,18 +463,25 @@
     @media (max-width: 640px) {
       body { padding: 20px 14px; }
       h1 { font-size: 1.3rem; }
-      .header { flex-direction: column; align-items: flex-start; gap: 14px; margin-bottom: 28px; }
+      .header { flex-direction: column; align-items: flex-start; gap: 14px; margin-bottom: 24px; }
+      .header-controls { width: 100%; flex-direction: column; align-items: flex-start; gap: 12px; }
       .presets { width: 100%; }
       .preset-btn { flex: 1; text-align: center; font-size: 0.75rem; padding: 7px 8px; }
+      .horizon-wrap { width: 100%; justify-content: space-between; }
+      .horizon-pills { flex: 1; justify-content: flex-end; }
+      .horizon-btn { flex: 1; text-align: center; padding: 5px 8px; font-size: 0.68rem; }
       .metric-value { font-size: 1.2rem; }
-      .metric { padding: 18px 10px; }
+      .metric { padding: 16px 10px; }
       .metric-label { font-size: 0.6rem; }
-      .slider-label { width: 140px; font-size: 0.8rem; }
+      .slider-meta { width: 145px; }
+      .slider-label { font-size: 0.78rem; }
+      .slider-subtext { font-size: 0.64rem; }
       .slider-val { width: 58px; font-size: 0.82rem; padding: 4px 8px; }
       .slider-row { gap: 12px; padding: 14px 0; }
       .slider-row input[type="range"]::-webkit-slider-thumb { width: 22px; height: 22px; }
       .chart-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 20px; }
       .chart-card { padding: 14px 12px; }
+      .method-grid { grid-template-columns: 1fr; gap: 12px; }
       .ar-name { width: 44px; font-size: 0.68rem; }
       .ar-value { width: 64px; font-size: 0.78rem; }
       .ar-pct { width: 50px; font-size: 0.7rem; }
@@ -334,7 +490,7 @@
     @media (max-width: 420px) {
       .metrics { flex-direction: column; }
       .metric + .metric { border-left: none; border-top: 1px solid var(--border); }
-      .slider-label { width: 115px; font-size: 0.76rem; }
+      .slider-meta { width: 120px; }
     }
 
     ::-webkit-scrollbar { width: 5px; }
@@ -346,12 +502,24 @@
 
 <div class="container">
   <div class="header">
-    <h1>Bessent Simulator</h1>
-    <span class="attribution" id="attr"></span>
-    <div class="presets">
-      <button class="preset-btn" data-p="baseline" onclick="preset('baseline',this)">Baseline</button>
-      <button class="preset-btn active" data-p="base" onclick="preset('base',this)">Base Case</button>
-      <button class="preset-btn" data-p="max" onclick="preset('max',this)">Max Liquidity</button>
+    <div>
+      <h1>Bessent Simulator</h1>
+      <span class="attribution" id="attr"></span>
+    </div>
+    <div class="header-controls">
+      <div class="presets">
+        <button class="preset-btn" data-p="baseline" onclick="preset('baseline',this)">Baseline</button>
+        <button class="preset-btn active" data-p="base" onclick="preset('base',this)">Base Case</button>
+        <button class="preset-btn" data-p="max" onclick="preset('max',this)">Max Liquidity</button>
+      </div>
+      <div class="horizon-wrap">
+        <span class="horizon-label">Pace:</span>
+        <div class="horizon-pills">
+          <button class="horizon-btn" data-h="3" onclick="setHorizon(3,this)">3M Sprint</button>
+          <button class="horizon-btn active" data-h="6" onclick="setHorizon(6,this)">6M Standard</button>
+          <button class="horizon-btn" data-h="12" onclick="setHorizon(12,this)">12M Glide</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -362,6 +530,7 @@
       <div class="metric-label">Fed Net Liquidity</div>
       <div class="metric-value" id="m-nl">—</div>
       <div class="metric-delta dim" id="d-nl">—</div>
+      <div class="metric-flow" id="f-nl">—</div>
     </div>
     <div class="metric">
       <div class="metric-label">Implied BTC Price</div>
@@ -377,22 +546,34 @@
 
   <div class="controls">
     <div class="slider-row">
-      <div class="slider-label" id="lbl-tga">TGA Drawdown ($B)</div>
+      <div class="slider-meta">
+        <div class="slider-label" id="lbl-tga">TGA Drawdown ($B)</div>
+        <div class="slider-subtext" id="sub-tga">Baseline $950B → Target $550B</div>
+      </div>
       <input type="range" id="s-tga" min="-300" max="950" step="10" value="400" />
       <div class="slider-val" id="v-tga">400</div>
     </div>
     <div class="slider-row">
-      <div class="slider-label">Buyback Pace ($B/op)</div>
+      <div class="slider-meta">
+        <div class="slider-label">Buyback Pace ($B/op)</div>
+        <div class="slider-subtext" id="sub-pace">$8B/op (vs ≥$4B floor)</div>
+      </div>
       <input type="range" id="s-pace" min="2" max="25" step="1" value="8" />
       <div class="slider-val" id="v-pace">8</div>
     </div>
     <div class="slider-row">
-      <div class="slider-label">Absorption Ratio (%)</div>
+      <div class="slider-meta">
+        <div class="slider-label">Absorption Ratio (%)</div>
+        <div class="slider-subtext" id="sub-abs">75% net duration removal</div>
+      </div>
       <input type="range" id="s-abs" min="20" max="100" step="5" value="75" />
       <div class="slider-val" id="v-abs">75</div>
     </div>
     <div class="slider-row">
-      <div class="slider-label">QT Offset ($B/mo)</div>
+      <div class="slider-meta">
+        <div class="slider-label">QT Offset ($B/mo)</div>
+        <div class="slider-subtext" id="sub-qt">Fed balance sheet drag</div>
+      </div>
       <input type="range" id="s-qt" min="-50" max="50" step="5" value="-25" />
       <div class="slider-val" id="v-qt">&minus;25</div>
     </div>
@@ -425,6 +606,40 @@
       </div>
     </div>
   </div>
+
+  <details class="methodology-card">
+    <summary class="methodology-summary">
+      <span>Methodology & Transmission Spec</span>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </summary>
+    <div class="methodology-content">
+      <div class="method-grid">
+        <div class="method-item">
+          <div class="method-title">1. High-Powered Net Liquidity</div>
+          <p>Identifies bank reserves injected into the financial system via fiscal-monetary identity:</p>
+          <code>ΔNet Liquidity = ΔFed Assets − ΔTGA − ΔON RRP</code>
+          <p>TGA drawdowns shift cash directly from Treasury deposits to commercial bank reserves, offset by ~15% ON RRP cash drag.</p>
+        </div>
+        <div class="method-item">
+          <div class="method-title">2. Exponential BTC Elasticity</div>
+          <p>Reflects order-book illiquidity & inelastic supply with non-linear liquidity amplification:</p>
+          <code>BTC = $78,500 × exp(5.94 × lp)</code>
+          <p>Where <code>lp = ΔNet Liq / Baseline Net Liq</code>. Calibrates Base Case (+7.8%) to ~$125K and Max Liquidity (+19.5%) to ~$250K.</p>
+        </div>
+        <div class="method-item">
+          <div class="method-title">3. Duration-Weighted Yields</div>
+          <p>Nelson-Siegel model with duration weighting concentrated in the 7Y–30Y tenor space:</p>
+          <code>ΔYield(t) = -(TGA/950)·18bps·durW(t)·abs − (Pace/25)·durW(t)·6bps + QT</code>
+          <p>Short-end (≤1Y) is pinned to policy rates, focusing buyback compression on long-end term premiums.</p>
+        </div>
+        <div class="method-item">
+          <div class="method-title">4. Dealer Absorption & Betas</div>
+          <p>Primary dealers absorb ~25% of buyback velocity; 75% is net duration removal. Calibrated against Treasury's ≥$4B/op floor.</p>
+          <code>SPX β = +0.42 (Base Case +3.3%) | DXY β = -0.08 (Base Case -0.6%)</code>
+        </div>
+      </div>
+    </div>
+  </details>
 
   <footer>Bessent Simulator &mdash; Net Liquidity &equiv; Fed Assets &minus; TGA &minus; ON RRP &mdash; Research modeling only</footer>
 </div>
@@ -462,13 +677,20 @@ const PRESETS = {
   max:      { tga:950, pace:20, abs:90, qt:0 },
 };
 
-const S = { tga:400, pace:8, abs:75, qt:-25, active:'base' };
+const S = { tga:400, pace:8, abs:75, qt:-25, horizon:6, active:'base' };
 let D = {};
 
 const $ = id => document.getElementById(id);
 
 const fB = v => (v<0?'-':'') + '$' + Math.abs(Math.round(v)).toLocaleString() + 'B';
 const fU = v => '$' + Math.round(v).toLocaleString();
+
+function setHorizon(h, btn) {
+  S.horizon = h;
+  document.querySelectorAll('.horizon-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  render();
+}
 
 // ============================================================================
 //  MATH ENGINE
@@ -545,17 +767,30 @@ function render() {
   $('v-abs').textContent = S.abs;
   $('v-qt').textContent = S.qt >= 0 ? '+' + S.qt : '\u2212' + Math.abs(S.qt);
 
+  // Live contextual subtexts
+  const targetTGA = K.TGA - S.tga;
+  $('sub-tga').textContent = d.con
+    ? `Baseline $950B → Refill Target $${targetTGA}B`
+    : `Baseline $950B → Target $${targetTGA}B`;
+  $('sub-pace').textContent = `$${S.pace}B/op (vs ≥$4B floor)`;
+  $('sub-abs').textContent = `${S.abs}% net duration (${100 - S.abs}% dealer friction)`;
+
   // TGA contraction context
   $('lbl-tga').textContent = d.con ? 'TGA Refill ($B)' : 'TGA Drawdown ($B)';
   $('lbl-tga').style.color = d.con ? 'var(--rose)' : '';
   $('v-tga').style.color = d.con ? 'var(--rose)' : '';
   $('v-tga').style.borderColor = d.con ? 'rgba(244,63,94,0.3)' : '';
 
-  // Net Liquidity
+  // Net Liquidity + Annualized Flow Rate
   $('m-nl').textContent = fB(d.nl);
   const nlE = $('d-nl');
   nlE.textContent = `${d.dnl>=0?'+':''}${fB(d.dnl)} (${d.dnlP>=0?'+':''}${d.dnlP.toFixed(1)}%)`;
   nlE.className = 'metric-delta ' + (d.dnl >= 0 ? 'pos' : 'neg');
+
+  const flowPerMonth = d.dnl / S.horizon;
+  const flowStr = (flowPerMonth >= 0 ? '+' : '-') + '$' + Math.abs(flowPerMonth).toFixed(1) + 'B';
+  $('f-nl').textContent = `${flowStr}/mo (${S.horizon}M pace)`;
+  $('f-nl').style.color = d.dnl >= 0 ? 'var(--cyan)' : 'var(--rose)';
 
   // BTC
   $('m-btc').textContent = fU(d.btc);
