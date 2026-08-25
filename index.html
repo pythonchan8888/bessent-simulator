@@ -34,6 +34,7 @@
   <meta name="theme-color" content="#0a0a12" />
 
   <!-- Favicons & App Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -190,6 +191,17 @@
       flex-wrap: wrap;
       gap: 16px;
       margin-bottom: 36px;
+    }
+
+    .brand-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo-icon {
+      flex-shrink: 0;
+      filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.25));
     }
 
     h1 {
@@ -611,9 +623,32 @@
 
 <div class="container">
   <div class="header">
-    <div>
-      <h1>Bessent Simulator</h1>
-      <span class="attribution" id="attr"></span>
+    <div class="brand-title-wrap">
+      <svg class="brand-logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="32" height="32" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="hdr-amber" x1="20" y1="24" x2="110" y2="64" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f59e0b"/>
+            <stop offset="60%" stop-color="#fbbf24"/>
+            <stop offset="100%" stop-color="#fef08a"/>
+          </linearGradient>
+          <linearGradient id="hdr-pillar" x1="18" y1="22" x2="34" y2="106" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="100%" stop-color="#2563eb"/>
+          </linearGradient>
+          <linearGradient id="hdr-core" x1="38" y1="64" x2="98" y2="64" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#38bdf8"/>
+          </linearGradient>
+        </defs>
+        <rect x="18" y="24" width="12" height="80" rx="3" fill="url(#hdr-pillar)"/>
+        <path d="M36 30 C 58 30, 80 42, 108 61 C 111 62.8, 111 65.2, 108 67 C 80 86, 58 98, 36 98 L 36 82 C 54 82, 70 72, 92 64 C 70 56, 54 46, 36 46 Z" fill="url(#hdr-amber)"/>
+        <path d="M36 54 C 50 54, 64 59, 78 64 C 64 69, 50 74, 36 74 Z" fill="url(#hdr-core)"/>
+        <circle cx="108" cy="64" r="3.5" fill="#fef08a"/>
+      </svg>
+      <div>
+        <h1>Bessent Simulator</h1>
+        <span class="attribution" id="attr"></span>
+      </div>
     </div>
     <div class="header-controls">
       <div class="presets">
