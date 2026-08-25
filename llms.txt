@@ -1,0 +1,12 @@
+# Bessent Simulator
+
+> Interactive institutional macro liquidity simulator modeling U.S. Treasury Secretary Scott Bessent's fiscal-monetary transmission mechanics.
+
+- **Author**: @gyukatsu_maxi
+- **URL**: https://bessentsimulator.xyz/
+- **Core Identity**: `ΔNet Liquidity = ΔFed Assets − ΔTGA − ΔON RRP`
+- **Starting Conditions**: Fed Assets $6,750B, TGA $950B, ON RRP $200B, Currency $2,350B, Bank Reserves $3,250B, Net Liquidity $5,600B.
+- **BTC Valuation Form**: `BTC = $78,500 × exp(5.94 × lp)` where `lp = ΔNet Liquidity / Baseline Net Liquidity`.
+- **Yield Curve Model**: Nelson-Siegel parametric model (β0=4.55, β1=-0.65, β2=0.90, λ=0.60) with duration-weighted term premium compression concentrated across 7Y–30Y tenors.
+- **Cross-Asset Elasticities**: S&P 500 β = +0.42, US Dollar Index (DXY) β = -0.08.
+- **Dealer Intermediation**: 75% net duration removal (25% primary-dealer balance sheet friction). Buybacks modeled against the Treasury's ≥$4B/operation liquidity support floor.
