@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Bessent Simulator</title>
+  <meta name="description" content="Simulate the fiscal-monetary transmission mechanics of U.S. Treasury Secretary Scott Bessent deploying the ~$950B TGA cash buffer." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a12;
+      --surface: #111119;
+      --border: #1c1c2e;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --purple: #8b5cf6;
+      --mono: 'JetBrains Mono', 'SF Mono', monospace;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* ---- Chart Grid (hl.eco style) ---- */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 28px;
+      margin-bottom: 12px;
+    }
+
+    .chart-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      min-height: 0;
+    }
+
+    .card-title {
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: var(--mono);
+      margin-bottom: 12px;
+    }
+
+    /* Yield curve SVG */
+    .yc-area { width: 100%; }
+    .yc-area svg { width: 100%; height: auto; display: block; }
+
+    /* Asset rows */
+    .asset-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+    }
+    .asset-row + .asset-row { border-top: 1px solid rgba(255,255,255,0.04); }
+
+    .ar-name {
+      width: 52px;
+      flex-shrink: 0;
+      font-size: 0.72rem;
+      font-weight: 600;
+      font-family: var(--mono);
+      letter-spacing: 0.04em;
+    }
+
+    .ar-value {
+      width: 72px;
+      flex-shrink: 0;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: var(--mono);
+      color: var(--text);
+      text-align: right;
+    }
+
+    .delta-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .delta-fill {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.25s ease, left 0.25s ease;
+    }
+
+    .ar-pct {
+      width: 56px;
+      flex-shrink: 0;
+      font-size: 0.74rem;
+      font-weight: 600;
+      font-family: var(--mono);
+      text-align: right;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 32px 20px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    .container { width: 100%; max-width: 840px; }
+
+    /* ---- Header ---- */
+    .header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    h1 {
+      font-size: 1.55rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.025em;
+    }
+
+    .presets { display: flex; gap: 8px; }
+
+    .preset-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 18px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      font-family: var(--sans);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--text-dim);
+      color: var(--text);
+    }
+
+    .preset-btn.active {
+      background: rgba(6, 182, 212, 0.08);
+      border-color: rgba(6, 182, 212, 0.5);
+      color: var(--text);
+    }
+
+    /* ---- Sankey ---- */
+    .chart-wrap { margin-bottom: 0; }
+    .chart-wrap canvas { width: 100%; display: block; }
+
+    /* ---- Metrics ---- */
+    .metrics {
+      display: flex;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+
+    .metric {
+      flex: 1;
+      padding: 22px 16px;
+      text-align: center;
+    }
+
+    .metric + .metric { border-left: 1px solid var(--border); }
+
+    .metric-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: var(--mono);
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 1.55rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 4px;
+      transition: color 0.2s ease;
+    }
+
+    .metric-delta {
+      font-size: 0.72rem;
+      font-weight: 500;
+      font-family: var(--mono);
+    }
+
+    .pos { color: var(--emerald); }
+    .neg { color: var(--rose); }
+    .dim { color: var(--text-dim); }
+
+    /* ---- Sliders ---- */
+    .controls { margin-bottom: 28px; }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .slider-label {
+      width: 175px;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color 0.15s ease;
+    }
+
+    .slider-row input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: #1e2740;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .slider-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.35);
+      transition: transform 0.1s ease;
+    }
+
+    .slider-row input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    .slider-row input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      border: none;
+    }
+
+    .slider-val {
+      width: 68px;
+      flex-shrink: 0;
+      text-align: right;
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text);
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+
+    /* ---- Footer ---- */
+    footer {
+      text-align: center;
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      padding-top: 12px;
+      font-family: var(--mono);
+      letter-spacing: 0.03em;
+      opacity: 0.7;
+    }
+
+    /* ---- Attribution ---- */
+    .attribution {
+      font-size: 0.68rem;
+      font-weight: 500;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      opacity: 0.45;
+      letter-spacing: 0.02em;
+    }
+
+    /* ---- Mobile ---- */
+    @media (max-width: 640px) {
+      body { padding: 20px 14px; }
+      h1 { font-size: 1.3rem; }
+      .header { flex-direction: column; align-items: flex-start; gap: 14px; margin-bottom: 28px; }
+      .presets { width: 100%; }
+      .preset-btn { flex: 1; text-align: center; font-size: 0.75rem; padding: 7px 8px; }
+      .metric-value { font-size: 1.2rem; }
+      .metric { padding: 18px 10px; }
+      .metric-label { font-size: 0.6rem; }
+      .slider-label { width: 140px; font-size: 0.8rem; }
+      .slider-val { width: 58px; font-size: 0.82rem; padding: 4px 8px; }
+      .slider-row { gap: 12px; padding: 14px 0; }
+      .slider-row input[type="range"]::-webkit-slider-thumb { width: 22px; height: 22px; }
+      .chart-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 20px; }
+      .chart-card { padding: 14px 12px; }
+      .ar-name { width: 44px; font-size: 0.68rem; }
+      .ar-value { width: 64px; font-size: 0.78rem; }
+      .ar-pct { width: 50px; font-size: 0.7rem; }
+    }
+
+    @media (max-width: 420px) {
+      .metrics { flex-direction: column; }
+      .metric + .metric { border-left: none; border-top: 1px solid var(--border); }
+      .slider-label { width: 115px; font-size: 0.76rem; }
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Bessent Simulator</h1>
+    <span class="attribution" id="attr"></span>
+    <div class="presets">
+      <button class="preset-btn" data-p="baseline" onclick="preset('baseline',this)">Baseline</button>
+      <button class="preset-btn active" data-p="base" onclick="preset('base',this)">Base Case</button>
+      <button class="preset-btn" data-p="max" onclick="preset('max',this)">Max Liquidity</button>
+    </div>
+  </div>
+
+  <div class="chart-wrap"><canvas id="sankey"></canvas></div>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Fed Net Liquidity</div>
+      <div class="metric-value" id="m-nl">—</div>
+      <div class="metric-delta dim" id="d-nl">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Implied BTC Price</div>
+      <div class="metric-value" id="m-btc">—</div>
+      <div class="metric-delta dim" id="d-btc">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">10Y Yield Compression</div>
+      <div class="metric-value" id="m-yld">—</div>
+      <div class="metric-delta dim" id="d-yld">—</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="slider-row">
+      <div class="slider-label" id="lbl-tga">TGA Drawdown ($B)</div>
+      <input type="range" id="s-tga" min="-300" max="950" step="10" value="400" />
+      <div class="slider-val" id="v-tga">400</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">Buyback Pace ($B/op)</div>
+      <input type="range" id="s-pace" min="2" max="25" step="1" value="8" />
+      <div class="slider-val" id="v-pace">8</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">Absorption Ratio (%)</div>
+      <input type="range" id="s-abs" min="20" max="100" step="5" value="75" />
+      <div class="slider-val" id="v-abs">75</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">QT Offset ($B/mo)</div>
+      <input type="range" id="s-qt" min="-50" max="50" step="5" value="-25" />
+      <div class="slider-val" id="v-qt">&minus;25</div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="card-title">Yield Curve</div>
+      <div class="yc-area" id="yc-wrap"></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-title">Cross-Asset Impact</div>
+      <div class="asset-row" id="ar-btc">
+        <div class="ar-name" style="color:var(--emerald)">BTC</div>
+        <div class="ar-value" id="arv-btc">—</div>
+        <div class="delta-track"><div class="delta-fill" id="arf-btc"></div></div>
+        <div class="ar-pct" id="arp-btc">—</div>
+      </div>
+      <div class="asset-row" id="ar-spx">
+        <div class="ar-name" style="color:var(--cyan)">SPX</div>
+        <div class="ar-value" id="arv-spx">—</div>
+        <div class="delta-track"><div class="delta-fill" id="arf-spx"></div></div>
+        <div class="ar-pct" id="arp-spx">—</div>
+      </div>
+      <div class="asset-row" id="ar-dxy">
+        <div class="ar-name" style="color:var(--amber)">DXY</div>
+        <div class="ar-value" id="arv-dxy">—</div>
+        <div class="delta-track"><div class="delta-fill" id="arf-dxy"></div></div>
+        <div class="ar-pct" id="arp-dxy">—</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Bessent Simulator &mdash; Net Liquidity &equiv; Fed Assets &minus; TGA &minus; ON RRP &mdash; Research modeling only</footer>
+</div>
+
+<script>
+// ============================================================================
+//  CONSTANTS & CONFIG
+// ============================================================================
+// ── Configurable attribution watermark ──
+const ATTRIBUTION_HANDLE = '@gyukatsu_maxi';
+const ATTRIBUTION_LINE = `by ${ATTRIBUTION_HANDLE} \u2022 Macro Liquidity Engine`;
+
+const K = Object.freeze({
+  ASSETS: 6750, TGA: 950, RRP: 200, CURRENCY: 2350, RESERVES: 3250,
+  NET_LIQ: 5600, Y10: 4.69, BTC: 78500,
+  BETA_BTC: 5.94, RRP_E: 0.15,
+  YIELDS: [4.98, 4.55, 4.69, 5.02, 4.92],
+  DV01:   [1.9, 4.5, 8.2, 14.5, 20.1],
+  BK_S:   [0.10, 0.20, 0.30, 0.22, 0.18],
+  TP_W:   [0.05, 0.15, 0.35, 0.28, 0.17],
+  COMP:   65,
+  // Cross-asset baselines (calibrated to user's transmission specs)
+  SPX: 5850, BETA_SPX: 0.42,
+  DXY: 104.2, BETA_DXY: -0.08,
+  // Yield curve tenors (years) for Nelson-Siegel
+  TENORS: [0.25, 0.5, 1, 2, 5, 10, 20, 30],
+  TENOR_L: ['3M','6M','1Y','2Y','5Y','10Y','20Y','30Y'],
+  // Nelson-Siegel baseline params
+  NS_B0: 4.55, NS_B1: -0.65, NS_B2: 0.90, NS_LAM: 0.6,
+});
+
+const PRESETS = {
+  baseline: { tga:0, pace:2, abs:50, qt:-25 },
+  base:     { tga:400, pace:8, abs:75, qt:-25 },
+  max:      { tga:950, pace:20, abs:90, qt:0 },
+};
+
+const S = { tga:400, pace:8, abs:75, qt:-25, active:'base' };
+let D = {};
+
+const $ = id => document.getElementById(id);
+
+const fB = v => (v<0?'-':'') + '$' + Math.abs(Math.round(v)).toLocaleString() + 'B';
+const fU = v => '$' + Math.round(v).toLocaleString();
+
+// ============================================================================
+//  MATH ENGINE
+// ============================================================================
+function calc(s) {
+  const a = s.abs / 100;
+  const remTGA = Math.max(0, K.TGA - s.tga);
+  const rrpD = Math.min(K.RRP, Math.max(0, s.tga * K.RRP_E));
+  const remRRP = K.RRP - rrpD;
+  const adjA = K.ASSETS + s.qt;
+  const nl = adjA - remTGA - remRRP;
+  const dnl = nl - K.NET_LIQ;
+  const dnlP = (dnl / K.NET_LIQ) * 100;
+  const res = K.RESERVES + s.tga + rrpD + Math.min(0, s.qt);
+
+  // Yield curve
+  const yShifts = [], simY = [];
+  for (let i = 0; i < 5; i++) {
+    const tp = -(s.tga/950) * K.COMP * K.TP_W[i] * a;
+    const dv = -(s.pace/25) * K.BK_S[i] * K.DV01[i] * 0.5;
+    const qt = (s.qt/50) * 3;
+    const t = tp + dv + qt;
+    yShifts.push(t);
+    simY.push(Math.max(0.5, K.YIELDS[i] + t / 100));
+  }
+
+  // BTC — exponential (convex) model: crypto amplifies liquidity non-linearly
+  const lp = dnl / K.NET_LIQ;
+  const btc = K.BTC * Math.exp(K.BETA_BTC * lp);
+  const sig = 0.035 + 0.015 * Math.abs(lp);
+
+  // SPX & DXY
+  const spx = K.SPX * (1 + K.BETA_SPX * lp);
+  const spxDP = ((spx - K.SPX) / K.SPX) * 100;
+  const dxy = K.DXY * (1 + K.BETA_DXY * lp);
+  const dxyDP = ((dxy - K.DXY) / K.DXY) * 100;
+
+  // Nelson-Siegel yield curve (baseline + compressed)
+  const nsYields = [], nsComp = [];
+  K.TENORS.forEach((t, i) => {
+    const et = Math.exp(-K.NS_LAM * t);
+    const f1 = (1 - et) / (K.NS_LAM * t);
+    const f2 = f1 - et;
+    const baseline = K.NS_B0 + K.NS_B1 * f1 + K.NS_B2 * f2;
+    // Duration-weighted compression: pinned at 0 for t<=1Y, ramps through 7Y-30Y
+    const durW = t <= 1 ? 0 : Math.min(1, (t - 1) / 9) * Math.pow(t / 30, 0.35);
+    const comp = -(s.tga / 950) * K.COMP * durW * a * 0.012
+               -(s.pace / 25) * durW * 0.06
+               +(s.qt / 50) * durW * 0.03;
+    nsYields.push(baseline);
+    nsComp.push(Math.max(0.5, baseline + comp));
+  });
+
+  return {
+    remTGA, remRRP, rrpD, adjA, nl, dnl, dnlP, res,
+    yShifts, simY, d10: yShifts[2], s10: simY[2],
+    btc, btcLo: btc*(1-sig), btcHi: btc*(1+sig),
+    btcDP: ((btc-K.BTC)/K.BTC)*100,
+    spx, spxDP, dxy, dxyDP,
+    nsYields, nsComp,
+    con: s.tga < 0,
+  };
+}
+
+// ============================================================================
+//  DOM RENDER
+// ============================================================================
+function render() {
+  const d = D;
+
+  // Slider values
+  $('v-tga').textContent = S.tga;
+  $('v-pace').textContent = S.pace;
+  $('v-abs').textContent = S.abs;
+  $('v-qt').textContent = S.qt >= 0 ? '+' + S.qt : '\u2212' + Math.abs(S.qt);
+
+  // TGA contraction context
+  $('lbl-tga').textContent = d.con ? 'TGA Refill ($B)' : 'TGA Drawdown ($B)';
+  $('lbl-tga').style.color = d.con ? 'var(--rose)' : '';
+  $('v-tga').style.color = d.con ? 'var(--rose)' : '';
+  $('v-tga').style.borderColor = d.con ? 'rgba(244,63,94,0.3)' : '';
+
+  // Net Liquidity
+  $('m-nl').textContent = fB(d.nl);
+  const nlE = $('d-nl');
+  nlE.textContent = `${d.dnl>=0?'+':''}${fB(d.dnl)} (${d.dnlP>=0?'+':''}${d.dnlP.toFixed(1)}%)`;
+  nlE.className = 'metric-delta ' + (d.dnl >= 0 ? 'pos' : 'neg');
+
+  // BTC
+  $('m-btc').textContent = fU(d.btc);
+  $('m-btc').style.color = d.btcDP >= 0 ? 'var(--emerald)' : 'var(--rose)';
+  const bE = $('d-btc');
+  bE.textContent = `${fU(d.btcLo)} \u2013 ${fU(d.btcHi)}`;
+  bE.className = 'metric-delta ' + (d.btcDP >= 0 ? 'pos' : 'neg');
+
+  // 10Y Yield
+  const abs10 = Math.abs(Math.round(d.d10));
+  $('m-yld').textContent = `${d.d10 <= 0 ? '\u2212' : '+'}${abs10}bps`;
+  $('m-yld').style.color = d.d10 <= 0 ? 'var(--emerald)' : 'var(--rose)';
+  $('d-yld').textContent = `${d.s10.toFixed(2)}% implied`;
+  $('d-yld').className = 'metric-delta dim';
+}
+
+// ============================================================================
+//  SANKEY (Canvas) — Proper diverging flow visualization
+// ============================================================================
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return [r,g,b];
+}
+
+function sankey() {
+  const c = $('sankey');
+  const ctx = c.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = c.parentElement.clientWidth;
+  const H = Math.max(390, Math.min(546, W * 0.65));
+
+  c.width = W * dpr;
+  c.height = H * dpr;
+  c.style.width = W + 'px';
+  c.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const d = D;
+  const mob = W < 520;
+  const pT = 36, pB = 28;
+  const chartH = H - pT - pB;
+
+  // ── SEGMENTS (top-to-bottom: TGA, ON RRP, Bank Reserves, Currency) ──
+  const segs = [
+    { l: 'TGA',            v: Math.max(0, d.remTGA), c: '#f59e0b' },
+    { l: 'ON RRP',         v: Math.max(0, d.remRRP), c: '#8b5cf6' },
+    { l: 'Bank Reserves',  v: Math.max(1, d.res),    c: '#10b981' },
+    { l: 'Currency',       v: K.CURRENCY,             c: '#64748b' },
+  ];
+
+  // Only layout segments with value > 0
+  const active = segs.filter(s => s.v > 0);
+  const total = active.reduce((s, x) => s + x.v, 0);
+  if (total <= 0) return;
+
+  // ── LAYOUT ──
+  const lX = mob ? 6 : 12;
+  const lW = mob ? 48 : 72;
+  const rW = mob ? 32 : 40;
+  const rX = mob ? W * 0.50 : W * 0.75;
+  const rGap = mob ? 12 : 16;
+
+  // Scale drawing height proportionally to Fed Assets
+  // Amplify the visual change (3×) so ±50B QT range is perceptible
+  const assetRatio = d.adjA / K.ASSETS;          // ~0.993 to ~1.007
+  const amplified = 1 - (1 - assetRatio) * 3;    // amplify deviation 3×
+  const drawH = chartH * Math.max(0.5, Math.min(1, amplified));
+  const drawY = pT + (chartH - drawH) / 2;       // center vertically
+
+  const flowLX = lX + lW;
+  const flowRX = rX;
+  const cpOff = (flowRX - flowLX) * 0.42;
+
+  // ── LEFT SLICES (proportional, no gaps) ──
+  let lY = drawY;
+  active.forEach(s => {
+    s.lY = lY;
+    s.lH = (s.v / total) * drawH;
+    lY += s.lH;
+  });
+
+  // ── RIGHT BLOCKS (proportional, with gaps & minimums) ──
+  const gaps = rGap * (active.length - 1);
+  const usable = drawH - gaps;
+  const rawH = active.map(s => Math.max(mob ? 6 : 10, (s.v / total) * usable));
+  const rawSum = rawH.reduce((a, b) => a + b, 0);
+  const sc = usable / rawSum;
+
+  let rY = drawY;
+  active.forEach((s, i) => {
+    s.rY = rY;
+    s.rH = rawH[i] * sc;
+    rY += s.rH + rGap;
+  });
+
+  // ── 1. FLOW RIBBONS ──
+  active.forEach(s => {
+    const [cr, cg, cb] = hexToRgb(s.c);
+
+    ctx.beginPath();
+    ctx.moveTo(flowLX, s.lY);
+    ctx.bezierCurveTo(flowLX + cpOff, s.lY, flowRX - cpOff, s.rY, flowRX, s.rY);
+    ctx.lineTo(flowRX, s.rY + s.rH);
+    ctx.bezierCurveTo(flowRX - cpOff, s.rY + s.rH, flowLX + cpOff, s.lY + s.lH, flowLX, s.lY + s.lH);
+    ctx.closePath();
+
+    const rg = ctx.createLinearGradient(flowLX, 0, flowRX, 0);
+    rg.addColorStop(0,   `rgba(${cr},${cg},${cb},0.06)`);
+    rg.addColorStop(0.4, `rgba(${cr},${cg},${cb},0.14)`);
+    rg.addColorStop(1,   `rgba(${cr},${cg},${cb},0.26)`);
+    ctx.fillStyle = rg;
+    ctx.fill();
+
+    // Edge strokes
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.25)`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(flowLX, s.lY);
+    ctx.bezierCurveTo(flowLX + cpOff, s.lY, flowRX - cpOff, s.rY, flowRX, s.rY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(flowLX, s.lY + s.lH);
+    ctx.bezierCurveTo(flowLX + cpOff, s.lY + s.lH, flowRX - cpOff, s.rY + s.rH, flowRX, s.rY + s.rH);
+    ctx.stroke();
+  });
+
+  // ── 2. LEFT BLOCK (Fed Assets) ──
+  const lgL = ctx.createLinearGradient(lX, drawY, lX + lW, drawY + drawH);
+  lgL.addColorStop(0, '#1e3a8a');
+  lgL.addColorStop(1, '#2563eb');
+  ctx.fillStyle = lgL;
+  ctx.shadowColor = '#3b82f650';
+  ctx.shadowBlur = 14;
+  rr(ctx, lX, drawY, lW, drawH, 5);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = 'transparent';
+
+  // Fed Assets label — centered in block
+  ctx.fillStyle = 'rgba(255,255,255,0.78)';
+  ctx.font = `500 ${mob ? 9 : 11}px "Inter",sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const lCX = lX + lW / 2;
+  const lCY = drawY + drawH / 2;
+  ctx.fillText('Fed Assets', lCX, lCY - 9);
+  ctx.font = `600 ${mob ? 10 : 13}px "Inter",sans-serif`;
+  ctx.fillText(`(${fB(d.adjA)})`, lCX, lCY + 9);
+
+  // ── 3. RIGHT BLOCKS ──
+  active.forEach(s => {
+    ctx.fillStyle = s.c;
+    ctx.shadowColor = s.c + '50';
+    ctx.shadowBlur = 8;
+    rr(ctx, rX, s.rY, rW, s.rH, 4);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+
+    // Value string
+    const vStr = s.v >= 1000
+      ? '$' + (s.v / 1000).toFixed(s.v >= 10000 ? 1 : 2) + 'T'
+      : '$' + Math.round(s.v) + 'B';
+
+    // Always label to the RIGHT of block
+    ctx.font = `600 ${mob ? 9 : 11}px "Inter",sans-serif`;
+    ctx.fillStyle = s.c;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${s.l}  ${vStr}`, rX + rW + (mob ? 6 : 10), s.rY + s.rH / 2);
+  });
+
+  // ── 4. Split ticks on left block ──
+  lY = drawY;
+  active.forEach((s, i) => {
+    if (i > 0) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(lX + 3, lY);
+      ctx.lineTo(lX + lW - 3, lY);
+      ctx.stroke();
+    }
+    lY += s.lH;
+  });
+}
+
+function rr(ctx, x, y, w, h, r) {
+  r = Math.min(r, h/2, w/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h);
+  ctx.arcTo(x, y+h, x, y+h-r, r);
+  ctx.lineTo(x, y+r);
+  ctx.arcTo(x, y, x+r, y, r);
+  ctx.closePath();
+}
+
+// ============================================================================
+//  PRESETS & INPUT
+// ============================================================================
+function preset(name, btn) {
+  const p = PRESETS[name]; if (!p) return;
+  S.tga = p.tga; S.pace = p.pace; S.abs = p.abs; S.qt = p.qt; S.active = name;
+  $('s-tga').value = p.tga;
+  $('s-pace').value = p.pace;
+  $('s-abs').value = p.abs;
+  $('s-qt').value = p.qt;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  tick();
+}
+
+function onInput() {
+  S.tga = +$('s-tga').value;
+  S.pace = +$('s-pace').value;
+  S.abs = +$('s-abs').value;
+  S.qt = +$('s-qt').value;
+  S.active = 'custom';
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  for (const [n, p] of Object.entries(PRESETS)) {
+    if (S.tga===p.tga && S.pace===p.pace && S.abs===p.abs && S.qt===p.qt) {
+      S.active = n;
+      document.querySelector(`[data-p="${n}"]`)?.classList.add('active');
+      break;
+    }
+  }
+  tick();
+}
+
+let raf = false;
+function tick() {
+  if (raf) return;
+  raf = true;
+  requestAnimationFrame(() => { raf = false; D = calc(S); render(); sankey(); yieldCurve(); assetPanel(); });
+}
+
+// ============================================================================
+//  YIELD CURVE (SVG)
+// ============================================================================
+function yieldCurve() {
+  const wrap = $('yc-wrap');
+  const d = D;
+  const W = wrap.clientWidth || 300;
+  const H = Math.min(180, W * 0.48);
+  const pL = 32, pR = 8, pT = 12, pB = 24;
+  const cW = W - pL - pR;
+  const cH = H - pT - pB;
+
+  const tenors = K.TENORS;
+  const allY = d.nsYields.concat(d.nsComp);
+  const yMin = Math.floor(Math.min(...allY) * 10) / 10 - 0.1;
+  const yMax = Math.ceil(Math.max(...allY) * 10) / 10 + 0.1;
+
+  const xOf = i => pL + (i / (tenors.length - 1)) * cW;
+  const yOf = v => pT + (1 - (v - yMin) / (yMax - yMin)) * cH;
+
+  // Build paths
+  const basePath = d.nsYields.map((y, i) => `${i===0?'M':'L'}${xOf(i).toFixed(1)},${yOf(y).toFixed(1)}`).join(' ');
+  const compPath = d.nsComp.map((y, i) => `${i===0?'M':'L'}${xOf(i).toFixed(1)},${yOf(y).toFixed(1)}`).join(' ');
+
+  // Shade area between curves
+  const areaPath = d.nsComp.map((y, i) => `${i===0?'M':'L'}${xOf(i).toFixed(1)},${yOf(y).toFixed(1)}`).join(' ')
+    + d.nsYields.slice().reverse().map((y, i) => `L${xOf(tenors.length-1-i).toFixed(1)},${yOf(y).toFixed(1)}`).join(' ') + 'Z';
+
+  // Tenor labels
+  const labels = K.TENOR_L.map((l, i) => `<text x="${xOf(i).toFixed(1)}" y="${H - 4}" text-anchor="middle" fill="#64748b" font-size="8" font-family="'JetBrains Mono',monospace">${l}</text>`).join('');
+
+  // Y-axis ticks (3 levels)
+  const yTicks = [yMin, (yMin+yMax)/2, yMax];
+  const gridLines = yTicks.map(v => `<line x1="${pL}" x2="${W-pR}" y1="${yOf(v).toFixed(1)}" y2="${yOf(v).toFixed(1)}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/><text x="${pL-4}" y="${(yOf(v)+3).toFixed(1)}" text-anchor="end" fill="#64748b" font-size="7" font-family="'JetBrains Mono',monospace">${v.toFixed(1)}%</text>`).join('');
+
+  // 10Y highlight (index 5)
+  const i10 = 5;
+  const x10 = xOf(i10), yB10 = yOf(d.nsYields[i10]), yC10 = yOf(d.nsComp[i10]);
+  const spread = (d.nsComp[i10] - d.nsYields[i10]) * 100;
+  const spreadLabel = `${spread <= 0 ? '' : '+'}${spread.toFixed(0)}bps`;
+
+  wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="yc-shade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#10b981" stop-opacity="0.12"/>
+        <stop offset="100%" stop-color="#10b981" stop-opacity="0.02"/>
+      </linearGradient>
+    </defs>
+    ${gridLines}
+    <path d="${areaPath}" fill="url(#yc-shade)"/>
+    <path d="${basePath}" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <path d="${compPath}" fill="none" stroke="#10b981" stroke-width="2"/>
+    <circle cx="${x10.toFixed(1)}" cy="${yC10.toFixed(1)}" r="3.5" fill="#10b981" stroke="#0a0a12" stroke-width="1.5"/>
+    <line x1="${x10.toFixed(1)}" y1="${yB10.toFixed(1)}" x2="${x10.toFixed(1)}" y2="${yC10.toFixed(1)}" stroke="#10b981" stroke-width="1" stroke-dasharray="2,2" opacity="0.5"/>
+    <text x="${(x10+6).toFixed(1)}" y="${((yB10+yC10)/2).toFixed(1)}" fill="#10b981" font-size="8" font-weight="600" font-family="'JetBrains Mono',monospace">${spreadLabel}</text>
+    ${labels}
+  </svg>`;
+}
+
+// ============================================================================
+//  CROSS-ASSET PANEL
+// ============================================================================
+function assetPanel() {
+  const d = D;
+  const maxPct = 25; // scale cap for delta bars
+
+  function renderRow(id, val, pct, color) {
+    const el = $(id + '-btc') ? null : null; // just for clarity
+    const vEl = $('arv-' + id);
+    const fEl = $('arf-' + id);
+    const pEl = $('arp-' + id);
+
+    // Format value
+    if (id === 'btc') vEl.textContent = '$' + Math.round(val).toLocaleString();
+    else if (id === 'spx') vEl.textContent = Math.round(val).toLocaleString();
+    else vEl.textContent = val.toFixed(1);
+
+    // Delta bar (centered at 50%)
+    const clamped = Math.max(-maxPct, Math.min(maxPct, pct));
+    const barW = (Math.abs(clamped) / maxPct) * 50; // max 50% width
+    const isPos = clamped >= 0;
+    fEl.style.width = barW + '%';
+    fEl.style.left = isPos ? '50%' : (50 - barW) + '%';
+    fEl.style.background = isPos ? color : 'var(--rose)';
+
+    // Percentage label
+    pEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+    pEl.style.color = pct >= 0 ? color : 'var(--rose)';
+  }
+
+  renderRow('btc', d.btc, d.btcDP, 'var(--emerald)');
+  renderRow('spx', d.spx, d.spxDP, 'var(--cyan)');
+  renderRow('dxy', d.dxy, d.dxyDP, 'var(--amber)');
+}
+// ============================================================================
+//  BOOT
+// ============================================================================
+function init() {
+  $('attr').textContent = ATTRIBUTION_LINE;
+  ['s-tga','s-pace','s-abs','s-qt'].forEach(id => $(id).addEventListener('input', onInput));
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { sankey(); yieldCurve(); }, 120); });
+  D = calc(S);
+  render();
+  requestAnimationFrame(() => { sankey(); yieldCurve(); assetPanel(); });
+}
+
+document.readyState === 'loading'
+  ? document.addEventListener('DOMContentLoaded', init)
+  : init();
+</script>
+</body>
+</html>
