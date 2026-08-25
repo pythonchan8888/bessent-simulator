@@ -6,7 +6,7 @@
   
   <!-- Primary SEO -->
   <title>Bessent Simulator — TGA Bazooka & Net Liquidity Engine</title>
-  <meta name="description" content="Interactive research tool modeling U.S. Treasury Secretary Scott Bessent’s ~$950B TGA cash buffer, long-end buybacks, and the transmission into Fed Net Liquidity, Bitcoin, and 10-year yields." />
+  <meta name="description" content="Interactive research tool modeling U.S. Treasury Secretary Scott Bessent’s ~$950B Treasury General Account (TGA) cash buffer, long-end buybacks, and the transmission into Fed Net Liquidity, Bitcoin, and 10-year yields." />
   <meta name="author" content="@gyukatsu_maxi" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
   <link rel="canonical" href="https://bessentsimulator.xyz/" />
@@ -799,7 +799,7 @@
           <div class="method-title">1. High-Powered Net Liquidity</div>
           <p>Identifies bank reserves injected into the financial system via fiscal-monetary identity:</p>
           <code>ΔNet Liquidity = ΔFed Assets − ΔTGA − ΔON RRP</code>
-          <p>TGA drawdowns shift cash directly from Treasury deposits to commercial bank reserves, offset by ~15% ON RRP cash drag.</p>
+          <p>Treasury General Account (TGA) drawdowns shift cash directly from Treasury deposits to commercial bank reserves, offset by ~15% ON RRP cash drag.</p>
         </div>
         <div class="method-item">
           <div class="method-title">2. Exponential BTC Elasticity</div>
@@ -809,8 +809,9 @@
         </div>
         <div class="method-item">
           <div class="method-title">3. Duration-Weighted Yields</div>
-          <p>Nelson-Siegel model with duration weighting concentrated in the 7Y–30Y tenor space:</p>
-          <code>ΔYield(t) = -(TGA/950)·18bps·durW(t)·abs − (Pace/25)·durW(t)·6bps + QT</code>
+          <p>Nelson-Siegel model with compression weighted across the 2Y–30Y tenor space (0.35 weight at 10Y):</p>
+          <code>ΔYield(t) = −(TGA/950)·150bps·w(t)·abs − (Pace/25)·(TGA/950)·150bps·w(t)·0.55 + QT</code>
+          <p>The TGA term anchors a 150bps full-drawdown compression budget; the buyback pace term scales 55% of that budget with drawdown-funded velocity. Short end (≤1Y) stays pinned to policy rates.</p>
           <p>Short-end (≤1Y) is pinned to policy rates, focusing buyback compression on long-end term premiums.</p>
         </div>
         <div class="method-item">
@@ -841,7 +842,7 @@ const K = Object.freeze({
   DV01:   [1.9, 4.5, 8.2, 14.5, 20.1],
   BK_S:   [0.10, 0.20, 0.30, 0.22, 0.18],
   TP_W:   [0.05, 0.15, 0.35, 0.28, 0.17],
-  COMP:   65,
+  COMP:   150,
   // Cross-asset baselines (calibrated to user's transmission specs)
   SPX: 5850, BETA_SPX: 0.42,
   DXY: 104.2, BETA_DXY: -0.08,
@@ -887,11 +888,13 @@ function calc(s) {
   const dnlP = (dnl / K.NET_LIQ) * 100;
   const res = K.RESERVES + s.tga + rrpD + Math.min(0, s.qt);
 
-  // Yield curve
+  // Yield curve — unified compression model
+  // TGA term: full-drawdown budget (150bps) × duration weight × absorption
+  // Pace term: buyback velocity scales 55% of the same budget (drawdown-funded)
   const yShifts = [], simY = [];
   for (let i = 0; i < 5; i++) {
     const tp = -(s.tga/950) * K.COMP * K.TP_W[i] * a;
-    const dv = -(s.pace/25) * K.BK_S[i] * K.DV01[i] * 0.5;
+    const dv = -(s.pace/25) * (s.tga/950) * K.COMP * K.BK_S[i] * a * 0.55;
     const qt = (s.qt/50) * 3;
     const t = tp + dv + qt;
     yShifts.push(t);
@@ -910,19 +913,26 @@ function calc(s) {
   const dxyDP = ((dxy - K.DXY) / K.DXY) * 100;
 
   // Nelson-Siegel yield curve (baseline + compressed)
+  // Compression interpolated from the bucket shifts → metric & curve always agree
+  const bucketT = [2, 5, 10, 20, 30];
+  const interpShift = (t) => {
+    if (t <= 1) return 0;
+    for (let i = 0; i < bucketT.length - 1; i++) {
+      if (t >= bucketT[i] && t <= bucketT[i+1]) {
+        const f = (t - bucketT[i]) / (bucketT[i+1] - bucketT[i]);
+        return yShifts[i] + (yShifts[i+1] - yShifts[i]) * f;
+      }
+    }
+    return yShifts[4];
+  };
   const nsYields = [], nsComp = [];
   K.TENORS.forEach((t, i) => {
     const et = Math.exp(-K.NS_LAM * t);
     const f1 = (1 - et) / (K.NS_LAM * t);
     const f2 = f1 - et;
     const baseline = K.NS_B0 + K.NS_B1 * f1 + K.NS_B2 * f2;
-    // Duration-weighted compression: pinned at 0 for t<=1Y, ramps through 7Y-30Y
-    const durW = t <= 1 ? 0 : Math.min(1, (t - 1) / 9) * Math.pow(t / 30, 0.35);
-    const comp = -(s.tga / 950) * K.COMP * durW * a * 0.012
-               -(s.pace / 25) * durW * 0.06
-               +(s.qt / 50) * durW * 0.03;
     nsYields.push(baseline);
-    nsComp.push(Math.max(0.5, baseline + comp));
+    nsComp.push(Math.max(0.5, baseline + interpShift(t) / 100));
   });
 
   return {
