@@ -809,7 +809,7 @@
         </div>
         <div class="method-item">
           <div class="method-title">3. Duration-Weighted Yields</div>
-          <p>Nelson-Siegel model with compression weighted across the 2Y–30Y tenor space (0.35 weight at 10Y):</p>
+          <p>Nelson-Siegel model with compression weighted across the 2Y–30Y tenor space, deepening monotonically toward the long end (0.35 weight at 10Y, 0.45 at 30Y):</p>
           <code>ΔYield(t) = −(TGA/950)·150bps·w(t)·abs − (Pace/25)·(TGA/950)·150bps·w(t)·0.55 + QT</code>
           <p>The TGA term anchors a 150bps full-drawdown compression budget; the buyback pace term scales 55% of that budget with drawdown-funded velocity. Short end (≤1Y) stays pinned to policy rates.</p>
           <p>Short-end (≤1Y) is pinned to policy rates, focusing buyback compression on long-end term premiums.</p>
@@ -840,8 +840,8 @@ const K = Object.freeze({
   BETA_BTC: 5.94, RRP_E: 0.15,
   YIELDS: [4.98, 4.55, 4.69, 5.02, 4.92],
   DV01:   [1.9, 4.5, 8.2, 14.5, 20.1],
-  BK_S:   [0.10, 0.20, 0.30, 0.22, 0.18],
-  TP_W:   [0.05, 0.15, 0.35, 0.28, 0.17],
+  BK_S:   [0.10, 0.20, 0.30, 0.35, 0.40],
+  TP_W:   [0.05, 0.15, 0.35, 0.40, 0.45],
   COMP:   150,
   // Cross-asset baselines (calibrated to user's transmission specs)
   SPX: 5850, BETA_SPX: 0.42,
@@ -913,17 +913,36 @@ function calc(s) {
   const dxyDP = ((dxy - K.DXY) / K.DXY) * 100;
 
   // Nelson-Siegel yield curve (baseline + compressed)
-  // Compression interpolated from the bucket shifts → metric & curve always agree
+  // Compression interpolated from the bucket shifts via monotone cubic →
+  // metric & curve always agree, long end deepens monotonically (no reversion)
   const bucketT = [2, 5, 10, 20, 30];
-  const interpShift = (t) => {
-    if (t <= 1) return 0;
-    for (let i = 0; i < bucketT.length - 1; i++) {
-      if (t >= bucketT[i] && t <= bucketT[i+1]) {
-        const f = (t - bucketT[i]) / (bucketT[i+1] - bucketT[i]);
-        return yShifts[i] + (yShifts[i+1] - yShifts[i]) * f;
-      }
+  // Fritsch–Carlson monotone cubic through bucket points
+  const mcXs = bucketT, mcYs = yShifts;
+  const n = mcXs.length;
+  const h = [], m = [];
+  for (let i = 0; i < n - 1; i++) { h[i] = mcXs[i+1] - mcXs[i]; m[i] = (mcYs[i+1] - mcYs[i]) / h[i]; }
+  const d = new Array(n).fill(0);
+  d[0] = m[0]; d[n-1] = m[n-2];
+  for (let i = 1; i < n - 1; i++) {
+    if (m[i-1] * m[i] <= 0) d[i] = 0;
+    else {
+      const w1 = 2*h[i] + h[i-1], w2 = h[i] + 2*h[i-1];
+      d[i] = (w1 + w2) / (w1/m[i-1] + w2/m[i]);
     }
-    return yShifts[4];
+  }
+  const mc = (t) => {
+    if (t <= mcXs[0]) return mcYs[0];
+    if (t >= mcXs[n-1]) return mcYs[n-1];
+    let i = 0;
+    while (t > mcXs[i+1]) i++;
+    const hh = h[i], t1 = (t - mcXs[i]) / hh, t2 = 1 - t1;
+    return mcYs[i]*t2*t2*(1+2*t1) + mcYs[i+1]*t1*t1*(1+2*t2)
+         + d[i]*hh*t2*t2*t1 + d[i+1]*hh*t1*t1*t2;
+  };
+  const interpShift = (t) => {
+    if (t <= 1) return 0;                    // short end pinned to policy rates
+    if (t < 2) return yShifts[0] * (t - 1);  // smooth 1Y→2Y ramp
+    return mc(t);
   };
   const nsYields = [], nsComp = [];
   K.TENORS.forEach((t, i) => {
