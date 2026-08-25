@@ -554,7 +554,7 @@
       .metric-delta { font-size: 0.62rem; }
       .metric-flow { font-size: 0.58rem; }
       /* Full-bleed Sankey — edge to edge on mobile */
-      .chart-wrap { margin-left: -14px; margin-right: -14px; }
+      .chart-wrap { margin-left: -14px; margin-right: -14px; width: calc(100% + 28px); }
       .slider-meta { width: 145px; }
       .slider-label { font-size: 0.78rem; }
       .slider-subtext { font-size: 0.64rem; }
@@ -577,6 +577,7 @@
       .metric-delta { font-size: 0.58rem; }
       .metric-flow { font-size: 0.54rem; }
       .metrics { gap: 6px; }
+      .chart-wrap { margin-left: -12px; margin-right: -12px; width: calc(100% + 24px); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -955,11 +956,11 @@ function sankey() {
   if (total <= 0) return;
 
   // ── LAYOUT ──
-  const lX = mob ? 6 : 12;
-  const lW = mob ? 48 : 72;
-  const rW = mob ? 32 : 40;
-  const rX = mob ? W * 0.50 : W * 0.75;
-  const rGap = mob ? 12 : 16;
+  const lX = mob ? 4 : 12;
+  const lW = mob ? 42 : 72;
+  const rW = mob ? 28 : 40;
+  const rX = mob ? W * 0.48 : W * 0.75;
+  const rGap = mob ? 10 : 16;
 
   // Scale drawing height proportionally to Fed Assets
   // Amplify the visual change (3×) so ±50B QT range is perceptible
