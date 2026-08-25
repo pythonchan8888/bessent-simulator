@@ -79,6 +79,14 @@
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.045),
         0 8px 24px rgba(0,0,0,0.22);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .chart-card:hover {
+      border-color: rgba(255,255,255,0.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        0 12px 30px rgba(0,0,0,0.3);
     }
 
     .card-title {
@@ -181,7 +189,12 @@
       z-index: 0;
     }
 
-    .container { width: 100%; max-width: 840px; position: relative; z-index: 1; }
+    .container { width: 100%; max-width: 840px; position: relative; z-index: 1; animation: fadeUp 0.55s cubic-bezier(0.22, 0.61, 0.36, 1); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: none; }
+    }
 
     /* ---- Header ---- */
     .header {
@@ -238,6 +251,10 @@
       color: var(--text);
     }
 
+    .preset-btn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
     .preset-btn.active {
       background: rgba(245, 158, 11, 0.09);
       border-color: rgba(245, 158, 11, 0.45);
@@ -279,6 +296,10 @@
       color: var(--text);
     }
 
+    .horizon-btn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
     .horizon-btn.active {
       background: rgba(6, 182, 212, 0.1);
       border-color: rgba(6, 182, 212, 0.4);
@@ -294,6 +315,7 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 14px;
+      margin-top: 24px;
       margin-bottom: 28px;
     }
 
@@ -341,6 +363,16 @@
       color: var(--text);
       margin-bottom: 4px;
       transition: color 0.2s ease;
+    }
+
+    /* Value change pulse — subtle text glow, no layout shift */
+    .metric-value.flash {
+      animation: valueFlash 0.45s ease;
+    }
+
+    @keyframes valueFlash {
+      0%   { text-shadow: 0 0 14px rgba(255,255,255,0.38); }
+      100% { text-shadow: 0 0 0 rgba(255,255,255,0); }
     }
 
     .metric-delta {
@@ -422,6 +454,11 @@
 
     .slider-row input[type="range"]::-webkit-slider-thumb:hover {
       transform: scale(1.15);
+    }
+
+    .slider-row input[type="range"]:active::-webkit-slider-thumb {
+      transform: scale(1.22);
+      box-shadow: 0 0 0 5px rgba(245,158,11,0.16), 0 1px 6px rgba(0,0,0,0.35);
     }
 
     .slider-row input[type="range"]::-moz-range-thumb {
@@ -565,7 +602,7 @@
       .horizon-wrap { width: 100%; justify-content: space-between; }
       .horizon-pills { flex: 1; justify-content: flex-end; }
       .horizon-btn { flex: 1; text-align: center; padding: 5px 8px; font-size: 0.68rem; }
-      .metrics { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .metrics { grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
       .metric-value { font-size: 0.95rem; }
       .metric { padding: 14px 6px; }
       .metric-label { font-size: 0.52rem; letter-spacing: 0.08em; margin-bottom: 6px; }
@@ -902,6 +939,15 @@ function calc(s) {
 // ============================================================================
 //  DOM RENDER
 // ============================================================================
+// Flash a metric value when its string changes (subtle glow pulse)
+function setFlash(el, val) {
+  if (el.dataset.last === val) return;
+  el.dataset.last = val;
+  el.classList.remove('flash');
+  void el.offsetWidth; // restart animation
+  el.classList.add('flash');
+}
+
 function render() {
   const d = D;
 
@@ -926,6 +972,7 @@ function render() {
   $('v-tga').style.borderColor = d.con ? 'rgba(244,63,94,0.3)' : '';
 
   // Net Liquidity + Annualized Flow Rate
+  setFlash($('m-nl'), fB(d.nl));
   $('m-nl').textContent = fB(d.nl);
   const nlE = $('d-nl');
   nlE.textContent = `${d.dnl>=0?'+':''}${fB(d.dnl)} (${d.dnlP>=0?'+':''}${d.dnlP.toFixed(1)}%)`;
@@ -937,6 +984,7 @@ function render() {
   $('f-nl').style.color = d.dnl >= 0 ? 'var(--cyan)' : 'var(--rose)';
 
   // BTC
+  setFlash($('m-btc'), fU(d.btc));
   $('m-btc').textContent = fU(d.btc);
   $('m-btc').style.color = d.btcDP >= 0 ? 'var(--emerald)' : 'var(--rose)';
   const bE = $('d-btc');
@@ -945,7 +993,9 @@ function render() {
 
   // 10Y Yield
   const abs10 = Math.abs(Math.round(d.d10));
-  $('m-yld').textContent = `${d.d10 <= 0 ? '\u2212' : '+'}${abs10}bps`;
+  const yldStr = `${d.d10 <= 0 ? '\u2212' : '+'}${abs10}bps`;
+  setFlash($('m-yld'), yldStr);
+  $('m-yld').textContent = yldStr;
   $('m-yld').style.color = d.d10 <= 0 ? 'var(--emerald)' : 'var(--rose)';
   $('d-yld').textContent = `${d.s10.toFixed(2)}% implied`;
   $('d-yld').className = 'metric-delta dim';
@@ -1037,19 +1087,42 @@ function sankey() {
   active.forEach(s => {
     const [cr, cg, cb] = hexToRgb(s.c);
 
-    ctx.beginPath();
-    ctx.moveTo(flowLX, s.lY);
-    ctx.bezierCurveTo(flowLX + cpOff, s.lY, flowRX - cpOff, s.rY, flowRX, s.rY);
-    ctx.lineTo(flowRX, s.rY + s.rH);
-    ctx.bezierCurveTo(flowRX - cpOff, s.rY + s.rH, flowLX + cpOff, s.lY + s.lH, flowLX, s.lY + s.lH);
-    ctx.closePath();
+    // Path tracer shared by all passes
+    const traceRibbon = () => {
+      ctx.moveTo(flowLX, s.lY);
+      ctx.bezierCurveTo(flowLX + cpOff, s.lY, flowRX - cpOff, s.rY, flowRX, s.rY);
+      ctx.lineTo(flowRX, s.rY + s.rH);
+      ctx.bezierCurveTo(flowRX - cpOff, s.rY + s.rH, flowLX + cpOff, s.lY + s.lH, flowLX, s.lY + s.lH);
+      ctx.closePath();
+    };
 
+    // Ambient glow pass — soft halo around the ribbon
+    ctx.save();
+    ctx.beginPath(); traceRibbon();
+    ctx.shadowColor = `rgba(${cr},${cg},${cb},0.55)`;
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},0.05)`;
+    ctx.fill();
+    ctx.restore();
+
+    // Main gradient fill
+    ctx.beginPath(); traceRibbon();
     const rg = ctx.createLinearGradient(flowLX, 0, flowRX, 0);
     rg.addColorStop(0,   `rgba(${cr},${cg},${cb},0.06)`);
     rg.addColorStop(0.4, `rgba(${cr},${cg},${cb},0.14)`);
     rg.addColorStop(1,   `rgba(${cr},${cg},${cb},0.26)`);
     ctx.fillStyle = rg;
     ctx.fill();
+
+    // Lit core spine — luminous centerline
+    const lMidY = s.lY + s.lH / 2;
+    const rMidY = s.rY + s.rH / 2;
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.16)`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(flowLX, lMidY);
+    ctx.bezierCurveTo(flowLX + cpOff, lMidY, flowRX - cpOff, rMidY, flowRX, rMidY);
+    ctx.stroke();
 
     // Edge strokes
     ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.25)`;
@@ -1115,7 +1188,7 @@ function sankey() {
       ctx.fillText(s.l, labelX, midY - 5.5);
 
       ctx.font = `700 9.5px "JetBrains Mono",monospace`;
-      ctx.fillStyle = s.c;
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
       ctx.fillText(vStr, labelX, midY + 5.5);
     } else {
       if (s.rH >= 26) {
@@ -1124,7 +1197,7 @@ function sankey() {
         ctx.fillText(s.l, labelX, midY - 6.5);
 
         ctx.font = `700 12px "JetBrains Mono",monospace`;
-        ctx.fillStyle = s.c;
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
         ctx.fillText(vStr, labelX, midY + 6.5);
       } else {
         ctx.font = `600 11px "Inter",sans-serif`;
